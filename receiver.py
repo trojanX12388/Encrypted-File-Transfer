@@ -1,18 +1,16 @@
 import socket
 import tqdm
+import rsa 
 
-from Crypto.Cipher import AES
-
-key = b"67890451298123451232123212321Key"
-nonce = b"67890451298123451232123212321Nce"
-
-cipher = AES.new(key, AES.MODE_EAX, nonce)
-
+with open("private.pem", "rb") as f:
+    private_key = rsa.PrivateKey.load_pkcs1(f.read())
+ 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(("127.0.0.1", 9999))
 server.listen()
 
 client, addr = server.accept()
+
 
 file_name = client.recv(1024).decode()
 print(file_name)
@@ -37,7 +35,7 @@ while not done:
 
 print(file_bytes)
 
-file.write(cipher.decrypt(file_bytes[:-5]))
+file.write(rsa.decrypt(file_bytes[:-5], private_key))
 
 file.close()
 client.close()
