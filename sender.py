@@ -34,12 +34,13 @@ nonce = b"".join([noncekey.encode('utf-8')])
 cipher = AES.new(key, AES.MODE_EAX, nonce)
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(("127.0.0.1", 5000))
+client.connect(("127.0.0.1", 9999))
 
 file = None
 
 if("--file" in  sys.argv):
     file = sys.argv[sys.argv.index("--file") + 1]  
+
 
 file_size = os.path.getsize("file/"+file)
 
@@ -53,9 +54,11 @@ if("--filename" in  sys.argv):
 encrypted = cipher.encrypt(data)
 
 client.send((""+filename).encode())
-client.send(str(file_size).encode())
+client.send(bytes(str(file_size),"UTF-32LE"))
 client.sendall(encrypted)
 client.send(b"<END>")
 
 client.close()
+
+print("File is successfully sent!")
 
