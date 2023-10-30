@@ -1,23 +1,61 @@
 import os
 import socket
-import rsa 
+import sys
 
-with open("public.pem", "rb") as f:
-    public_key = rsa.PublicKey.load_pkcs1(f.read())
+from Crypto.Cipher import AES
+
+charData = 0
+saltData = 0
+
+key = None
+nonce = None
+
+if("--key" in  sys.argv):
+    key = sys.argv[sys.argv.index("--key") + 1]  
+    for i in key:
+        charData += ord(i)  
+            
+password = int(charData)
+password = '{:032b}'.format(password)
+
+if("--salt" in  sys.argv):
+    nonce = sys.argv[sys.argv.index("--salt") + 1]  
+    for j in nonce:
+        saltData += ord(j)  
+            
+noncekey = int(saltData)
+noncekey = '{:032b}'.format(noncekey)
+
+
+key = b"".join([password.encode('utf-8')])
+nonce = b"".join([noncekey.encode('utf-8')])
+
+
+cipher = AES.new(key, AES.MODE_EAX, nonce)
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(("127.0.0.1", 9999))
+client.connect(("127.0.0.1", 5000))
 
-file_size = os.path.getsize("sample.txt")
+file = None
 
-with open("sample.txt", "rb") as f:
+if("--file" in  sys.argv):
+    file = sys.argv[sys.argv.index("--file") + 1]  
+
+file_size = os.path.getsize("file/"+file)
+
+
+with open("file/"+file, "rb") as f:
     data = f.read()
 
-encrypted = rsa.encrypt(data, public_key)
+if("--filename" in  sys.argv):
+    filename = sys.argv[sys.argv.index("--filename") + 1]  
 
-client.send("file.txt".encode('UTF-8'))
-client.send(str(file_size).encode('UTF-8'))
+encrypted = cipher.encrypt(data)
+
+client.send((""+filename).encode())
+client.send(str(file_size).encode())
 client.sendall(encrypted)
 client.send(b"<END>")
 
 client.close()
+

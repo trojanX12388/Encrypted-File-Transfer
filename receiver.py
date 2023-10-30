@@ -1,23 +1,49 @@
 import socket
 import tqdm
-import rsa 
+import sys
 
-with open("private.pem", "rb") as f:
-    private_key = rsa.PrivateKey.load_pkcs1(f.read())
- 
+from Crypto.Cipher import AES
+
+charData = 0
+saltData = 0
+
+key = None
+nonce = None
+
+if("--key" in  sys.argv):
+    key = sys.argv[sys.argv.index("--key") + 1]  
+    for i in key:
+        charData += ord(i)  
+            
+password = int(charData)
+password = '{:032b}'.format(password)
+
+if("--salt" in  sys.argv):
+    nonce = sys.argv[sys.argv.index("--salt") + 1]  
+    for j in nonce:
+        saltData += ord(j)  
+            
+noncekey = int(saltData)
+noncekey = '{:032b}'.format(noncekey)
+
+
+key = b"".join([password.encode('utf-8')])
+nonce = b"".join([noncekey.encode('utf-8')])
+
+
+cipher = AES.new(key, AES.MODE_EAX, nonce)
+
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind(("127.0.0.1", 9999))
+server.bind(("127.0.0.1", 5000))
 server.listen()
 
 client, addr = server.accept()
 
-
 file_name = client.recv(1024).decode()
 print(file_name)
 file_size = client.recv(1024).decode()
-print(file_size)
 
-file = open(file_name, "wb")
+file = open("received/"+file_name, "wb")
 
 done = False 
 
@@ -33,9 +59,7 @@ while not done:
         file_bytes += data
     progress.update(1024)
 
-print(file_bytes)
-
-file.write(rsa.decrypt(file_bytes[:-5], private_key))
+file.write(cipher.decrypt(file_bytes[:-5]))
 
 file.close()
 client.close()
