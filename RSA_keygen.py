@@ -1,7 +1,6 @@
 import rsa
 
-from pydrive.auth import GoogleAuth
-from pydrive.drive import GoogleDrive
+print("Generating Keys. Please wait...")
 
 public_key, private_key = rsa.newkeys(1024)
 
@@ -11,33 +10,28 @@ with open("generated_key/public.pem", "wb") as f:
 with open("generated_key/private.pem", "wb") as f:
     f.write(private_key.save_pkcs1("PEM"))
 
+with open("generated_key/public.pem", "rb") as f:
+    public_key = rsa.PublicKey.load_pkcs1(f.read())
 
-gauth = GoogleAuth()
-drive = GoogleDrive(gauth)
+with open("generated_key/private.pem", "rb") as f:
+    private_key = rsa.PrivateKey.load_pkcs1(f.read())
+    
 
-
-folder = '1Z3t-FckIlQUTT-KnYsDVbveZQqduc1of'
-
-
-file = "encrypted.crypt"
-
-message = "HELLO SAMPLE"
+message = "Key has been successfully generated!"
 
 data = rsa.encrypt(message.encode(), public_key)
 
 clear_message = rsa.decrypt(data, private_key)
 
+
+print("\n")
+print(public_key)
+print("\n")
+print(private_key)
+print("\n")
+
+print("Public key.pem created successfully!")
+print("Private key.pem created successfully!")
+print("\n")
 print(clear_message.decode())
-
-
-file_list = drive.ListFile({'q': "'%s' in parents and trashed=false"%(folder)}).GetList()
-
-took = False
-for file1 in file_list:
-  print('Filename: %s , id: %s , Date Created: %s , Size(Bytes): %s ' % (file1['title'] , file1['id'], file1['createdDate'], file1['quotaBytesUsed']))
-  file_id = file1['id']
-
-
-file6 = drive.CreateFile({'id': '1EoBbj6qrvwRj1v4t9PqPc3nFIerNfd7Z'})
-file6.GetContentFile('enc.crypt')
-
+print("Key is located at generated key folder.")

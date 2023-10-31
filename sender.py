@@ -1,6 +1,7 @@
 import os
 import socket
 import sys
+import tqdm
 
 from Crypto.Cipher import AES
 
@@ -55,10 +56,21 @@ encrypted = cipher.encrypt(data)
 
 client.send((""+filename).encode())
 client.send(bytes(str(file_size),"UTF-32LE"))
-client.sendall(encrypted)
-client.send(b"<END>")
 
+print("filename:"+filename)
+print("filesize (in bytes):"+str(file_size))
+
+progress = tqdm.tqdm(unit="B", unit_scale=True, unit_divisor=1024, total=int(file_size))
+
+for i in range(file_size):
+    progress.update(1)
+progress.close()
+
+client.sendall(encrypted)
+
+client.send(b"<END>")
 client.close()
 
+print("\n")
 print("File is successfully sent!")
 

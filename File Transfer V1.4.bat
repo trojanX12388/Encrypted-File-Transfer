@@ -4,9 +4,9 @@ for /F "tokens=1,2 delims=#" %%a in ('"prompt #$H#$E# & echo on & for %%b in (1)
   set "DEL=%%a"
 )
 cls
-color 07
 :start
 @TITLE File Transfer V1.4
+color 07
 cls
 echo *********************************************************************************************************
 echo.
@@ -63,7 +63,7 @@ cls
 @TITLE File Sender
 echo ***************************************************************
 echo.
-echo 			   File Sender 
+echo 			File Sender 
 echo.
 echo ***************************************************************
 ECHO.
@@ -96,7 +96,9 @@ ECHO File Output Name:
 set /p filename=
 
 ECHO.
-ECHO Sending File to the client...
+call :colorEcho 0c "Sending File to the client..."
+Echo (127.0.0.1:9999)
+ECHO. 
 ECHO.
 python.exe -u sender.py --key %key% --salt %salt% --file %file% --filename %filename%
 ECHO.
@@ -110,7 +112,7 @@ set key=
 set salt=
 echo ***************************************************************
 echo.
-echo 			   File Receiver
+echo 			File Receiver
 echo.
 echo ***************************************************************
 
@@ -124,23 +126,82 @@ ECHO.
 ECHO Generating Hash code...
 cls
 ECHO. 
-ECHO Waiting for the sender...
+ECHO (Listening to 127.0.0.1:9999)
+ECHO.
+call :colorEcho 0c "Waiting for the sender..."
+ECHO.
 
 python.exe -u receiver.py --key %key% --salt %salt%
-
 ECHO.
 ECHO. 
 pause
 goto start
 
 :encrypt
-ECHO TEST
+cls
+@TITLE Encrypted File Upload
+set file=
+set filename=
+echo ***************************************************************
+echo.
+echo 			Encrypted File Upload
+echo.
+echo ***************************************************************
+ECHO.
+ECHO List of files (In the File folder):
+ECHO.
+echo ***************************************************************
+ECHO.
+dir file /b
+ECHO.
+ECHO.
+echo ***************************************************************
+ECHO.
+ECHO Select file to upload in cloud:
+set /p file=
+ECHO.
+ECHO Select output filename:
+set /p filename=
 
-goto end
+python.exe -u encrypt_upload.py --file %file% --filename %filename%
+
+pause
 
 :decrypt
+@TITLE Decrypt File Download
+set key=
+set salt=
+echo ***************************************************************
+echo.
+echo 			Decrypt File Download
+echo.
+echo ***************************************************************
 
-goto end
+
+pause
+
+:generate
+cls
+@TITLE RSA Key Generator
+echo ***************************************************************
+echo.
+call :colorEcho 0A "              RSA Key Generator"
+echo.
+echo.
+echo ***************************************************************
+
+python.exe -u RSA_keygen.py
+echo.
+call :colorEcho 0c "Key has been successfully generated!"
+echo.
+call :colorEcho 0e "Key is located at generated_key folder."
+echo.
+echo.
+echo.
+pause
+
+goto start
+
 
 :end
 pause
