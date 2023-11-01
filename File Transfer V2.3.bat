@@ -5,13 +5,13 @@ for /F "tokens=1,2 delims=#" %%a in ('"prompt #$H#$E# & echo on & for %%b in (1)
 )
 cls
 :start
-@TITLE File Transfer V1.4
+@TITLE File Transfer V2.3
 color 07
 cls
 echo *********************************************************************************************************
 echo.
 call :colorEcho 0e "                                       Encrypted File Transfer"
-call :colorEcho 0A " V1.4"
+call :colorEcho 0A " V2.3"
 echo.
 call :colorEcho 0e "                                       Copyrighted"				
 call :colorEcho 0f " Oct-30-2023"

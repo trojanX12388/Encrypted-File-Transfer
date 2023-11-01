@@ -27,7 +27,6 @@ if("--salt" in  sys.argv):
 noncekey = int(saltData)
 noncekey = '{:032b}'.format(noncekey)
 
-
 key = b"".join([password.encode('utf-8')])
 nonce = b"".join([noncekey.encode('utf-8')])
 

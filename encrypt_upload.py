@@ -1,43 +1,69 @@
-import socket
+import sys
 import tqdm
-import rsa 
+import os
+import rsa
 
-with open("key/private.pem", "rb") as f:
+from cryptography.fernet import Fernet
+
+from pydrive.auth import GoogleAuth
+from pydrive.drive import GoogleDrive
+
+gauth = GoogleAuth()
+drive = GoogleDrive(gauth)
+
+folder = '1Z3t-FckIlQUTT-KnYsDVbveZQqduc1of'
+
+with open("generated_key/private.pem", "rb") as f:
     private_key = rsa.PrivateKey.load_pkcs1(f.read())
- 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind(("127.0.0.1", 9999))
-server.listen()
 
-client, addr = server.accept()
+with open("generated_key/filekey.key", "rb") as f:
+    enckey = f.read()
+
+key = rsa.decrypt(enckey,private_key)
+
+# using the generated key
+fernet = Fernet(key)
 
 
-file_name = client.recv(1024).decode()
-print(file_name)
-file_size = client.recv(1024).decode(errors='ignore')
-print(file_size)
+if("--file" in  sys.argv):
+    file = sys.argv[sys.argv.index("--file") + 1] 
 
-file = open(file_name, "wb")
 
-done = False 
+if("--filename" in  sys.argv):
+    filename = sys.argv[sys.argv.index("--filename") + 1] 
+    
 
-file_bytes = b""
+with open("file/"+file, "rb") as f:
+    data = f.read()
 
-progress = tqdm.tqdm(unit="B", unit_scale=True, unit_divisor=1000, total=int(file_size))
+file_size = os.path.getsize("file/"+file)
 
-while not done:
-    data = client.recv(1024)
-    if file_bytes[-5:] == b"<END>":
-        done = True
-    else:
-        file_bytes += data
-    progress.update(1024)
+print("Total Data Size:")
+print(str(file_size)+"-bytes")
+print("\n")
+print("Encrypting Data using filekey:")
 
-print(file_bytes)
+with tqdm.tqdm(total=file_size) as progress:
+    for chunk in data:
+        progress.update(chunk)
+    encrypted = fernet.encrypt(data)       
+      
+with open("encrypted/enc.crypt", "wb") as f:
+    f.write(encrypted)
 
-file.write(rsa.decrypt(file_bytes[:-5], private_key))
+file_upload = "encrypted/enc.crypt"
+print("\n")
+print("Preparing encrypted file to upload...")
 
-file.close()
-client.close()
-server.close() 
+file1 = drive.CreateFile(metadata={
+    "title": ""+filename+".crypt",
+    "parents": [{"id": folder}],
+    "mimeType":"txt/crypt"
+})
+print("uploading...")
+file1.SetContentFile(file_upload)
+file1.Upload()
+print("\n")
+print("Finished!")
+
 
