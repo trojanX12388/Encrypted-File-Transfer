@@ -13,10 +13,10 @@ gauth = GoogleAuth()
 drive = GoogleDrive(gauth)
 folder = '1Z3t-FckIlQUTT-KnYsDVbveZQqduc1of' 
 
-with open("generated_key/private.pem", "rb") as f:
+with open("key/private.pem", "rb") as f:
     private_key = rsa.PrivateKey.load_pkcs1(f.read())
 
-with open("generated_key/filekey.key", "rb") as f:
+with open("key/filekey.key", "rb") as f:
     enckey = f.read()
 
 key = rsa.decrypt(enckey,private_key)
