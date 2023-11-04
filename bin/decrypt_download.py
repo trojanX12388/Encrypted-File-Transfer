@@ -2,21 +2,24 @@ import tqdm
 import sys
 import os
 import rsa
+import os.path
 
 from time import sleep
 from cryptography.fernet import Fernet
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 
-
 gauth = GoogleAuth()
+gauth.LoadCredentialsFile(os.path.dirname(__file__) + '/../bin/gauth/credentials.json') 
+gauth.LoadClientConfigFile(os.path.dirname(__file__) + '/../bin/gauth/client_secrets.json')
+
 drive = GoogleDrive(gauth)
 folder = '1Z3t-FckIlQUTT-KnYsDVbveZQqduc1of' 
 
-with open("key/private.pem", "rb") as f:
+with open(os.path.dirname(__file__) + '/../key/private.pem', "rb") as f:
     private_key = rsa.PrivateKey.load_pkcs1(f.read())
 
-with open("key/filekey.key", "rb") as f:
+with open(os.path.dirname(__file__) + '/../key/filekey.key', "rb") as f:
     enckey = f.read()
 
 key = rsa.decrypt(enckey,private_key)
@@ -40,9 +43,9 @@ file_size = int(file6['quotaBytesUsed'])
 with tqdm.tqdm(total=file_size, unit="B", unit_scale=True, unit_divisor=1024) as progress:
     for i in range(file_size):
         progress.update(1)
-    file6.GetContentFile('download/dec.crypt')    
+    file6.GetContentFile(os.path.dirname(__file__) + '/../download/dec.crypt')    
         
-with open("download/dec.crypt", "rb") as f:
+with open(os.path.dirname(__file__) + '/../download/dec.crypt', "rb") as f:
     enc = f.read()
     
 print("\n")
@@ -63,14 +66,14 @@ try:
     print("\nFile is successfully downloaded and decrypted!")
     print("Check your file: download/"+file6['title'][:-6]+" ...")
     file = 'dec.crypt'  
-    location = "download"
+    location = os.path.dirname(__file__) + '/../download/'
     path = os.path.join(location, file)  
     os.remove(path)
     
 except:
     print("\nERROR: Invalid Filekey! Decryption Failed!")
     file = 'dec.crypt'  
-    location = "download"
+    location = os.path.dirname(__file__) + '/../download/'
     path = os.path.join(location, file)  
     os.remove(path)
 

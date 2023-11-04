@@ -1,6 +1,7 @@
 import socket
 import tqdm
 import sys
+import os.path
 
 from Crypto.Cipher import AES
 
@@ -44,7 +45,7 @@ file_name = client.recv(1024).decode()
 print(file_name)
 file_size = client.recv(1024)
 
-file = open("received/" + file_name, "wb")
+file = open(os.path.dirname(__file__) + '/../received/' + file_name, "wb")
 
 done = False
 

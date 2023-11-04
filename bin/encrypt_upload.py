@@ -2,6 +2,7 @@ import sys
 import tqdm
 import os
 import rsa
+import os.path
 
 from cryptography.fernet import Fernet
 
@@ -9,14 +10,17 @@ from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 
 gauth = GoogleAuth()
+gauth.LoadCredentialsFile(os.path.dirname(__file__) + '/../bin/gauth/credentials.json') 
+gauth.LoadClientConfigFile(os.path.dirname(__file__) + '/../bin/gauth/client_secrets.json')
+
 drive = GoogleDrive(gauth)
 
 folder = '1Z3t-FckIlQUTT-KnYsDVbveZQqduc1of'
 
-with open("key/private.pem", "rb") as f:
+with open(os.path.dirname(__file__) + '/../key/private.pem', "rb") as f:
     private_key = rsa.PrivateKey.load_pkcs1(f.read())
 
-with open("key/filekey.key", "rb") as f:
+with open(os.path.dirname(__file__) + '/../key/filekey.key', "rb") as f:
     enckey = f.read()
 
 key = rsa.decrypt(enckey,private_key)
@@ -33,10 +37,10 @@ if("--filename" in  sys.argv):
     filename = sys.argv[sys.argv.index("--filename") + 1] 
     
 
-with open("file/"+file, "rb") as f:
+with open(os.path.dirname(__file__) + '/../file/'+file, "rb") as f:
     data = f.read()
 
-file_size = os.path.getsize("file/"+file)
+file_size = os.path.getsize(os.path.dirname(__file__) + '/../file/'+file)
 
 print("Total Data Size:")
 print(str(file_size)+"-bytes")
@@ -48,12 +52,12 @@ with tqdm.tqdm(total=file_size ,unit="B", unit_scale=True, unit_divisor=1024) as
         progress.update(1)
     encrypted = fernet.encrypt(data)       
       
-with open("encrypted/enc.crypt", "wb") as f:
+with open(os.path.dirname(__file__) + '/../encrypted/enc.crypt', "wb") as f:
     f.write(encrypted)
 
-fileenc_size = os.path.getsize("encrypted/enc.crypt")
+fileenc_size = os.path.getsize(os.path.dirname(__file__) + '/../encrypted/enc.crypt')
 
-file_upload = "encrypted/enc.crypt"
+file_upload = os.path.dirname(__file__) + '/../encrypted/enc.crypt'
 print("\n")
 print("Preparing encrypted file to upload...")
 

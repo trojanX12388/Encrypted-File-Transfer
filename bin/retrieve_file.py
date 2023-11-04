@@ -1,8 +1,13 @@
+import os.path
+
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 
 
 gauth = GoogleAuth()
+gauth.LoadCredentialsFile(os.path.dirname(__file__) + '/../bin/gauth/credentials.json') 
+gauth.LoadClientConfigFile(os.path.dirname(__file__) + '/../bin/gauth/client_secrets.json')
+
 drive = GoogleDrive(gauth)
 folder = '1Z3t-FckIlQUTT-KnYsDVbveZQqduc1of' 
 

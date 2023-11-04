@@ -5,13 +5,13 @@ for /F "tokens=1,2 delims=#" %%a in ('"prompt #$H#$E# & echo on & for %%b in (1)
 )
 cls
 :start
-@TITLE File Transfer V2.7
+@TITLE File Transfer V3.4
 color 07
 cls
 echo *********************************************************************************************************
 echo.
 call :colorEcho 0e "                                       Encrypted File Transfer"
-call :colorEcho 0A " V2.7"
+call :colorEcho 0A " V3.4"
 echo.
 call :colorEcho 0e "                                       Copyrighted"				
 call :colorEcho 0f " Oct-30-2023"
@@ -36,6 +36,9 @@ echo.
 echo 		[5] Key Generator - Generate File Encryption and Decryption Key (Stored in Generated key folder)
 echo.
 echo.
+echo 		[6] Unsecured File Transfer - Transfer file to client without encryption.
+echo.
+echo.
 echo 		[e] Exit
 echo.
 echo *********************************************************************************************************
@@ -50,6 +53,7 @@ if '%choice%'=='2' goto receive
 if '%choice%'=='3' goto encrypt
 if '%choice%'=='4' goto decrypt
 if '%choice%'=='5' goto generate
+if '%choice%'=='6' goto unsecured
 if '%choice%'=='e' goto exit
 
 ECHO "%choice%" is not valid, try again
@@ -100,7 +104,7 @@ call :colorEcho 0c "Sending File to the client..."
 Echo (127.0.0.1:9999)
 ECHO. 
 ECHO.
-python.exe -u sender.py --key %key% --salt %salt% --file %file% --filename %filename%
+python.exe -u bin/sender.py --key %key% --salt %salt% --file %file% --filename %filename%
 ECHO.
 pause
 goto start
@@ -131,7 +135,7 @@ ECHO.
 call :colorEcho 0c "Waiting for the sender..."
 ECHO.
 
-python.exe -u receiver.py --key %key% --salt %salt%
+python.exe -u bin/receiver.py --key %key% --salt %salt%
 ECHO.
 ECHO. 
 pause
@@ -163,7 +167,7 @@ ECHO Enter upload filename:
 set /p filename=
 ECHO.
 
-python.exe -u encrypt_upload.py --file %file% --filename %filename%
+python.exe -u bin/encrypt_upload.py --file %file% --filename %filename%
 
 pause
 goto start
@@ -182,17 +186,108 @@ echo.
 echo.
 
 
-python.exe -u retrieve_file.py
+python.exe -u bin/retrieve_file.py
 echo.
 echo.
 ECHO Enter file id to download:
 set /p id=
 
-python.exe -u decrypt_download.py --id %id%
+python.exe -u bin/decrypt_download.py --id %id%
 ECHO.
 
 pause
 goto start
+
+
+:unsecured
+cls
+@TITLE Unsecured File Transfer
+echo ***********************************************************************
+echo.
+echo 			Unsecured File Transfer
+echo.
+echo.
+echo.	Options [1] Send File - Send File to the client (Sender)
+echo.
+echo 		[2] Receive File - Listen and Receive file (receiver)
+echo.
+echo 		[3] Back - Go back to main menu.
+echo.
+echo ***********************************************************************
+ECHO.
+set select=
+
+
+ECHO Select Option:
+set /p select=
+
+if not '%select%'=='' set choice=%choice:~0,1%
+
+if '%select%'=='1' goto unsec_send
+if '%select%'=='2' goto unsec_receive
+if '%select%'=='3' goto start
+
+pause
+goto start
+
+:unsec_send
+cls
+@TITLE Unsecured File Sender
+echo ***************************************************************
+echo.
+echo 			Unsecured File Sender 
+echo.
+echo ***************************************************************
+ECHO.
+set file=
+set filename=
+ECHO.
+ECHO List of files (In the File folder):
+ECHO.
+echo ***************************************************************
+ECHO.
+dir file /b
+ECHO.
+ECHO.
+echo ***************************************************************
+ECHO.
+ECHO Select file to send:
+set /p file=
+ECHO.
+ECHO File Output Name:
+set /p filename=
+
+ECHO.
+call :colorEcho 0c "Sending File to the client..."
+Echo (127.0.0.1:9999)
+ECHO. 
+ECHO.
+python.exe -u unsecured_FTP/send.py --file %file% --filename %filename%
+ECHO.
+pause
+goto start
+
+:unsec_receive
+cls
+@TITLE Unsecured File Receiver
+echo ***************************************************************
+echo.
+echo 			Unsecured File Receiver
+echo.
+echo ***************************************************************
+cls
+ECHO. 
+ECHO (Listening to 127.0.0.1:9999)
+ECHO.
+call :colorEcho 0c "Waiting for the sender..."
+ECHO.
+
+python.exe -u unsecured_FTP/receive.py 
+ECHO.
+ECHO. 
+pause
+goto start
+
 
 :generate
 cls
@@ -204,7 +299,7 @@ echo.
 echo.
 echo ***************************************************************
 
-python.exe -u RSA_keygen.py
+python.exe -u bin/RSA_keygen.py
 echo.
 call :colorEcho 0c "Key has been successfully generated!"
 echo.
