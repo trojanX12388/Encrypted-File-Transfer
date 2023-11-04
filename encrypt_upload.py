@@ -43,13 +43,15 @@ print(str(file_size)+"-bytes")
 print("\n")
 print("Encrypting Data using filekey:")
 
-with tqdm.tqdm(total=file_size) as progress:
+with tqdm.tqdm(total=file_size ,unit="B", unit_scale=True, unit_divisor=1024) as progress:
     for chunk in data:
-        progress.update(chunk)
+        progress.update(1)
     encrypted = fernet.encrypt(data)       
       
 with open("encrypted/enc.crypt", "wb") as f:
     f.write(encrypted)
+
+fileenc_size = os.path.getsize("encrypted/enc.crypt")
 
 file_upload = "encrypted/enc.crypt"
 print("\n")
@@ -62,7 +64,12 @@ file1 = drive.CreateFile(metadata={
 })
 print("uploading...")
 file1.SetContentFile(file_upload)
-file1.Upload()
+
+with tqdm.tqdm(total=fileenc_size ,unit="B", unit_scale=True, unit_divisor=1024) as progress:
+    for chunk in encrypted:
+        progress.update(1)
+    file1.Upload()    
+
 print("\n")
 print("Finished!")
 

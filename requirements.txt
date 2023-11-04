@@ -1,4 +1,3 @@
 pip install tqdm  
 pip install pydrive
 pip install pycryptodome
-easy_install pycrypto   
