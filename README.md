@@ -1,5 +1,7 @@
 # Encrypted-File-Transfer
 This is Source Code Project in IAS 2 BSIT 4-1 
+BY: trojanX12388 and Team SFTP
+
 
 INSTALLATION 
 
